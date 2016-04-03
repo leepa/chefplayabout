@@ -28,9 +28,12 @@ docker_container 'worker' do
 	repo 'golang'
   tag 'onbuild'
   port '8484:8484'
+  env [
+    "HOSTNAME=#{node['hostname']}"
+  ]
 	volumes ['/srv/docked_go:/go/src/app']
   command 'go run /go/src/app/main.go'
-	action [:create, :run_if_missing]
+	action [:create, :run, :run_if_missing]
 end
 
 firewall_rule 'worker' do
