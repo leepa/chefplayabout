@@ -30,5 +30,10 @@ docker_container 'worker' do
   port '8484:8484'
 	volumes ['/srv/docked_go:/go/src/app']
   command 'go run /go/src/app/main.go'
-	action [:start, :run_if_missing]
+	action [:create, :run_if_missing]
+end
+
+firewall_rule 'worker' do
+  port     8484
+  command  :allow
 end

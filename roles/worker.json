@@ -2,7 +2,13 @@
   "name": "worker",
   "chef_type": "role",
   "json_class": "Chef::Role",
+  "default_attributes": {
+    "firewall": {
+      "allow_ssh": true
+    }
+  },
   "run_list": [
+    "recipe[firewall]",
     "recipe[docked_go]"
   ]
 }
