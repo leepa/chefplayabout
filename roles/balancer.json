@@ -8,7 +8,10 @@
     }
   },
   "run_list": [
-    "recipe[firewall]"
+    "recipe[firewall]",
+    "recipe[selinux::permissive]",
+    "recipe[yum-epel]",
+    "recipe[nginx_balancer]"
   ]
 }
 

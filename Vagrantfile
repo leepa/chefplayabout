@@ -12,15 +12,19 @@ Vagrant.configure(2) do |config|
       :start_ip => '192.168.133.100'
     },
     :balancer => {
-      :ip   => '192.168.133.5',
-      :pass => 'worker'
+      :ip      => '192.168.133.5',
+      :pass    => 'worker',
+      :forward => {
+        :guest => 80,
+        :host  => 8080
+      }
     }
   }
 
-  # We'll store details of workers here
   $created_vms = {}
 
-  def make_vm(config, hostname, ip, role, pass = nil)
+  # We'll store details of workers here
+  def make_vm(config, hostname, ip, role, forward_rule, pass = nil)
     $created_vms[role] ||= []
     $created_vms[role] << ip
 
@@ -34,10 +38,13 @@ Vagrant.configure(2) do |config|
         if pass
           chef.json = {
             "custom_stuff" => {
-              "ip_addresses" => pass
+              "ip_addresses" => $created_vms[pass.to_sym]
             }
           }
         end
+      end
+      if forward_rule
+        vm.vm.network "forwarded_port", guest: forward_rule[:guest], host: forward_rule[:host]
       end
     end
   end
@@ -50,15 +57,15 @@ Vagrant.configure(2) do |config|
       (1..v[:count]).each do |i|
         ip = "#{first_octets}#{i + last_octet}"
         hostname = "#{k}-#{i}"
-        make_vm(config, hostname, ip, k)
+        make_vm(config, hostname, ip, k, v.fetch(:forward, nil), v.fetch(:pass, nil))
       end
     else
       pass = nil
       if v.has_key?(:pass)
-        pass = $created_vms[pass]
+        pass = v[:pass]
       end
       # No count, just a single VM
-      make_vm(config, k, v[:ip], k, pass)
+      make_vm(config, k, v[:ip], k, v.fetch(:forward, nil), v.fetch(:pass, nil))
     end
   end
 end

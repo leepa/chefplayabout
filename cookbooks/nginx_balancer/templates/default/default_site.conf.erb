@@ -1,0 +1,15 @@
+upstream balancer_upstream {
+  <% @ip_addresses.each do |node| %>
+  server <%= node %>:8484;
+  <% end %>
+}
+
+server {
+  listen 80;
+  server_name balancer;
+
+  location / {
+    proxy_pass http://balancer_upstream;
+    # TODO(leepa): In a real world you'd want to set headers etc.
+  }
+}
